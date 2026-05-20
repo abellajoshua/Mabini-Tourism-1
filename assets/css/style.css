@@ -116,6 +116,40 @@ p{
     pointer-events: auto;
 }
 
+.navbar-flex--tourism {
+    grid-template-columns: minmax(0, 1fr) 230px minmax(0, 1fr);
+}
+
+.navbar-flex--tourism .logo-center {
+    width: 220px;
+    transform: translateX(0);
+}
+
+.logo-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.tourism-logo {
+    position: absolute;
+    left: -8px;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.larga-logo {
+    position: absolute;
+    right: 2px;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+}
+
 /* Right Column: Navigation Links (constrained, no wrap) */
 .links-right {
     display: flex;
@@ -747,11 +781,30 @@ p{
         grid-template-columns: 1fr 70px 1fr;
         height: 60px;
     }
+    .navbar-flex--tourism {
+        grid-template-columns: 1fr 200px 1fr;
+    }
     .logo-center {
         width: 60px;
         height: 60px;
         min-width: 60px;
         transform: translateX(6px);
+    }
+    .navbar-flex--tourism .logo-center {
+        width: 186px;
+        transform: translateX(0);
+    }
+    .tourism-logo {
+        width: 58px;
+        height: 58px;
+    }
+    .larga-logo {
+        width: 46px;
+        height: 46px;
+    }
+    .logo-link .logo {
+        width: 52px;
+        height: 52px;
     }
     .links-left, .links-right {
         gap: 4px;
@@ -780,11 +833,30 @@ p{
         grid-template-columns: 1fr 60px 1fr;
         height: 56px;
     }
+    .navbar-flex--tourism {
+        grid-template-columns: 1fr 176px 1fr;
+    }
     .logo-center {
         width: 52px;
         height: 52px;
         min-width: 52px;
         transform: translateX(4px);
+    }
+    .navbar-flex--tourism .logo-center {
+        width: 166px;
+        transform: translateX(0);
+    }
+    .tourism-logo {
+        width: 52px;
+        height: 52px;
+    }
+    .larga-logo {
+        width: 42px;
+        height: 42px;
+    }
+    .logo-link .logo {
+        width: 46px;
+        height: 46px;
     }
     .links-left, .links-right {
         gap: 2px;
