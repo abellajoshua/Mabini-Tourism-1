@@ -1,12 +1,12 @@
 // Replace the below config object with your own Firebase project credentials
 const firebaseConfig = {
-  apiKey: "AIzaSyD2R72cmKXuy1928H4fPOnzwHELAyrm5Ns",
-  authDomain: "tourism-mabini.firebaseapp.com",
-  projectId: "tourism-mabini",
-  storageBucket: "tourism-mabini.firebasestorage.app",
-  messagingSenderId: "695008451492",
-  appId: "1:695008451492:web:bf2c158e28519b2e9dff31",
-  measurementId: "G-QP0464V633"
+  apiKey: "AIzaSyApI3SFkrYn5mPvf_aEDSLjpW8Xq5jHZ3E",
+  authDomain: "tourism-mabini-c997f.firebaseapp.com",
+  projectId: "tourism-mabini-c997f",
+  storageBucket: "tourism-mabini-c997f.firebasestorage.app",
+  messagingSenderId: "241231715040",
+  appId: "1:241231715040:web:a2711711120d9685bf8e85",
+  measurementId: "G-WECRBHXWLM"
 };
 
 // Initialize Firebase
