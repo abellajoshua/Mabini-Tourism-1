@@ -116,6 +116,40 @@ p{
     pointer-events: auto;
 }
 
+.navbar-flex--tourism {
+    grid-template-columns: minmax(0, 1fr) 230px minmax(0, 1fr);
+}
+
+.navbar-flex--tourism .logo-center {
+    width: 220px;
+    transform: translateX(0);
+}
+
+.logo-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.tourism-logo {
+    position: absolute;
+    left: -8px;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.larga-logo {
+    position: absolute;
+    right: 2px;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+}
+
 /* Right Column: Navigation Links (constrained, no wrap) */
 .links-right {
     display: flex;
@@ -216,6 +250,158 @@ p{
     height: 18px;
     color: rgba(255, 255, 255, 0.85);
     flex-shrink: 0;
+}
+
+.hero-bg-btn {
+    position: fixed;
+    right: 92px;
+    bottom: 24px;
+    z-index: 1200;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 16px;
+    background: #002037;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: none;
+}
+
+.hero-bg-btn:hover {
+    background: #003d5c;
+}
+
+.hero-bg-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 18, 30, 0.6);
+    padding: 20px;
+    z-index: 1300;
+}
+
+.hero-bg-modal.is-open {
+    display: flex;
+}
+
+.hero-bg-card {
+    width: min(560px, 100%);
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #dfe6ee;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+    padding: 20px;
+    display: grid;
+    gap: 12px;
+}
+
+.hero-bg-title {
+    margin: 0;
+    font-size: 18px;
+    color: #002037;
+}
+
+.hero-bg-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #5a6a80;
+}
+
+.hero-bg-label {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+    color: #002037;
+    font-weight: 600;
+}
+
+.hero-bg-list {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    color: #5a6a80;
+}
+
+.hero-bg-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid #e6ecf2;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.hero-bg-item-preview {
+    width: 44px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #dfe6ee;
+}
+
+.hero-bg-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.hero-bg-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hero-bg-item-remove {
+    border: none;
+    background: transparent;
+    color: #b02a2a;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 6px;
+}
+
+.hero-bg-status {
+    font-size: 13px;
+    color: #5a6a80;
+    min-height: 18px;
+}
+
+.hero-bg-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.hero-bg-btn-secondary,
+.hero-bg-btn-primary {
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid #dfe6ee;
+}
+
+.hero-bg-btn-secondary {
+    background: #eef3f9;
+    color: #002037;
+}
+
+.hero-bg-btn-primary {
+    background: #002037;
+    color: #fff;
+    border-color: #002037;
+}
+
+.hero-bg-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Search highlight */
@@ -595,11 +781,30 @@ p{
         grid-template-columns: 1fr 70px 1fr;
         height: 60px;
     }
+    .navbar-flex--tourism {
+        grid-template-columns: 1fr 200px 1fr;
+    }
     .logo-center {
         width: 60px;
         height: 60px;
         min-width: 60px;
         transform: translateX(6px);
+    }
+    .navbar-flex--tourism .logo-center {
+        width: 186px;
+        transform: translateX(0);
+    }
+    .tourism-logo {
+        width: 58px;
+        height: 58px;
+    }
+    .larga-logo {
+        width: 46px;
+        height: 46px;
+    }
+    .logo-link .logo {
+        width: 52px;
+        height: 52px;
     }
     .links-left, .links-right {
         gap: 4px;
@@ -628,11 +833,30 @@ p{
         grid-template-columns: 1fr 60px 1fr;
         height: 56px;
     }
+    .navbar-flex--tourism {
+        grid-template-columns: 1fr 176px 1fr;
+    }
     .logo-center {
         width: 52px;
         height: 52px;
         min-width: 52px;
         transform: translateX(4px);
+    }
+    .navbar-flex--tourism .logo-center {
+        width: 166px;
+        transform: translateX(0);
+    }
+    .tourism-logo {
+        width: 52px;
+        height: 52px;
+    }
+    .larga-logo {
+        width: 42px;
+        height: 42px;
+    }
+    .logo-link .logo {
+        width: 46px;
+        height: 46px;
     }
     .links-left, .links-right {
         gap: 2px;

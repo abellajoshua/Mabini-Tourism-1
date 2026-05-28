@@ -6,7 +6,18 @@
                 descriptionSelector: '.spot-desc',
                 imageSelector: '.spot-image',
                 extras: [
-                    { key: 'meta', label: 'Meta text', selector: '.spot-meta', type: 'text' }
+                    { key: 'meta', label: 'Meta text', selector: '.spot-meta', type: 'text' },
+                    {
+                        key: 'price',
+                        label: 'Price',
+                        selector: '.spot-price',
+                        type: 'text',
+                        allowCreate: true,
+                        createContainer: '.spot-content',
+                        createTag: 'p',
+                        createClass: 'spot-price',
+                        insertAfterSelector: '.spot-desc'
+                    }
                 ]
             },
             'product-card': {
@@ -15,7 +26,18 @@
                 imageSelector: '.product-image',
                 extras: [
                     { key: 'where', label: 'Where text', selector: '.product-where', type: 'text' },
-                    { key: 'note', label: 'Additional note', selector: '.product-content > p:not(.product-desc):not(.product-where)', type: 'text', allowCreate: true }
+                    {
+                        key: 'price',
+                        label: 'Price',
+                        selector: '.product-price',
+                        type: 'text',
+                        allowCreate: true,
+                        createContainer: '.product-content',
+                        createTag: 'p',
+                        createClass: 'product-price',
+                        insertAfterSelector: '.product-where'
+                    },
+                    { key: 'note', label: 'Additional note', selector: '.product-content > p:not(.product-desc):not(.product-where):not(.product-price)', type: 'text', allowCreate: true }
                 ]
             },
             'resort-card': {
@@ -422,12 +444,26 @@
 
                 if (!container) {
                     if (extra.allowCreate && value) {
-                        const content = card.querySelector('.product-content');
+                        const containerSelector = extra.createContainer || '.product-content';
+                        const content = card.querySelector(containerSelector);
                         if (!content) return;
 
-                        const paragraph = document.createElement('p');
-                        paragraph.textContent = value;
-                        content.appendChild(paragraph);
+                        const elementTag = extra.createTag || 'p';
+                        const element = document.createElement(elementTag);
+                        if (extra.createClass) {
+                            element.className = extra.createClass;
+                        }
+                        element.textContent = value;
+
+                        if (extra.insertAfterSelector) {
+                            const anchor = content.querySelector(extra.insertAfterSelector);
+                            if (anchor && anchor.parentElement === content) {
+                                anchor.insertAdjacentElement('afterend', element);
+                                return;
+                            }
+                        }
+
+                        content.appendChild(element);
                     }
                     return;
                 }
@@ -780,7 +816,7 @@
             newCard.classList.add('service-card-editable');
             newCard.querySelectorAll('.service-card-edit-btn, .service-card-delete-btn').forEach((button) => button.remove());
 
-            const textInputs = newCard.querySelectorAll('h3, .spot-desc, .product-desc, .product-where, .spot-meta, .resort-desc, .resort-meta, .amenities');
+            const textInputs = newCard.querySelectorAll('h3, .spot-desc, .spot-price, .product-desc, .product-where, .product-price, .spot-meta, .resort-desc, .resort-meta, .amenities');
             textInputs.forEach((node) => {
                 if (node.matches('h3')) {
                     node.textContent = 'New Card';

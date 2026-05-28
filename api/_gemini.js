@@ -1,20 +1,12 @@
-// Node.js Express server for Google Gemini itinerary generation
-
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+
+try {
+  require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+} catch (error) {
+  // dotenv is optional in deployed environments.
+}
+
 const axios = require('axios');
-
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.resolve(__dirname, '..')));
-
-app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '..', 'index.html'));
-});
 
 const GEMINI_API_VERSIONS = ['v1beta', 'v1'];
 const DEFAULT_GEMINI_MODELS = [
@@ -96,7 +88,6 @@ async function generateWithFallbackModels(payload) {
       lastError = err;
       const status = err?.response?.status;
 
-      // Try the next model if this one is restricted or unavailable.
       if (status === 403 || status === 404) {
         console.warn(`Gemini model ${model} (${version}) failed with ${status}. Trying next model.`);
         continue;
@@ -187,21 +178,21 @@ function buildLocalItinerary({ budget, groupSize, experience, activities, tripLe
   return { itinerary: itineraryParts.join('\n'), source: 'local-fallback', notice: note };
 }
 
-app.post(['/generate-itinerary', '/api/generate-itinerary'], async (req, res) => {
+async function generateItineraryFromBody(body = {}) {
   const {
     budget = 'Mid-range',
     groupSize = 2,
     experience = 'Beginner',
     activities = [],
     tripLength = '1-day'
-  } = req.body;
+  } = body;
 
   const allowedLengths = ['1-day', '2-day', '3-day', '4-day', '5-day', '6-day'];
   const safeLength = allowedLengths.includes(tripLength) ? tripLength : '1-day';
   const activitiesList = Array.isArray(activities) ? activities.join(', ') : String(activities || '');
 
   if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY is missing. Please set it in your environment.' });
+    return { status: 500, body: { error: 'GEMINI_API_KEY is missing. Please set it in your environment.' } };
   }
 
   const userPrompt = `You are a concise, friendly local guide for Mabini, Batangas. Plan a ${safeLength.replace('-', ' ')} itinerary tailored to:
@@ -219,19 +210,13 @@ Requirements:
 Keep it concise but actionable.`;
 
   try {
-    console.log('Received request:', { budget, groupSize, experience, activities, tripLength });
-
     const payload = {
       contents: [{ parts: [{ text: userPrompt }] }]
     };
 
-    console.log('Sending to Gemini:', JSON.stringify(payload).substring(0, 200) + '...');
-
     const { response, model, version } = await generateWithFallbackModels(payload);
-
     const itinerary = response.data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'No itinerary generated.';
-    console.log(`Generated itinerary successfully using model ${model} (${version})`);
-    res.json({ itinerary, model, version, source: 'gemini' });
+    return { status: 200, body: { itinerary, model, version, source: 'gemini' } };
   } catch (err) {
     const status = err.response?.status || 500;
     const apiMessage = err?.response?.data?.error?.message || err.message;
@@ -240,49 +225,40 @@ Keep it concise but actionable.`;
       : '';
 
     if (status === 429) {
-      console.warn('Gemini quota exhausted. Returning a local fallback itinerary.');
-      return res.json(
-        buildLocalItinerary({
-          budget,
-          groupSize,
-          experience,
-          activities,
-          tripLength,
-          note: apiMessage
-        })
-      );
+      return {
+        status: 200,
+        body: buildLocalItinerary({ budget, groupSize, experience, activities, tripLength, note: apiMessage })
+      };
     }
 
-    console.error('Gemini API error:', err.message);
-    console.error('Full error:', JSON.stringify(err.response?.data, null, 2));
-    res.status(status).json({
-      error: `${apiMessage}${keyHint}`,
-      details: err?.response?.data || err?.message
-    });
+    return {
+      status,
+      body: {
+        error: `${apiMessage}${keyHint}`,
+        details: err?.response?.data || err?.message
+      }
+    };
   }
-});
+}
 
-// Simple Gemini-powered chat endpoint
-app.post(['/chat', '/api/chat'], async (req, res) => {
-  const { message = '' } = req.body || {};
+async function chatReplyFromBody(body = {}) {
+  const { message = '' } = body;
 
   if (!message.trim()) {
-    return res.status(400).json({ error: 'Message is required.' });
+    return { status: 400, body: { error: 'Message is required.' } };
   }
 
   if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY is missing. Please set it in your environment.' });
+    return { status: 500, body: { error: 'GEMINI_API_KEY is missing. Please set it in your environment.' } };
   }
 
   const chatPrompt = `You are a concise, friendly Mabini, Batangas travel assistant. Answer helpfully in 3-5 sentences. If the user asks unrelated questions, politely steer back to travel/helpful local info. User: ${message}`;
 
   try {
     const payload = { contents: [{ parts: [{ text: chatPrompt }] }] };
-
     const { response, model, version } = await generateWithFallbackModels(payload);
-
     const reply = response.data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Sorry, I did not catch that.';
-    res.json({ reply, model, version, source: 'gemini' });
+    return { status: 200, body: { reply, model, version, source: 'gemini' } };
   } catch (err) {
     const status = err.response?.status || 500;
     const apiMessage = err?.response?.data?.error?.message || err.message;
@@ -291,51 +267,32 @@ app.post(['/chat', '/api/chat'], async (req, res) => {
       : '';
 
     if (status === 429) {
-      return res.json({
-        reply: 'I am temporarily out of Gemini quota, but I can still help with Mabini trip basics. Share your budget, activities, and trip length, and I will give you a practical local plan.',
-        source: 'local-fallback',
-        notice: apiMessage
-      });
+      return {
+        status: 200,
+        body: {
+          reply: 'I am temporarily out of Gemini quota, but I can still help with Mabini trip basics. Share your budget, activities, and trip length, and I will give you a practical local plan.',
+          source: 'local-fallback',
+          notice: apiMessage
+        }
+      };
     }
 
-    console.error('Gemini chat error:', err.message);
-    console.error('Full error:', JSON.stringify(err.response?.data, null, 2));
-    res.status(status).json({
-      error: `${apiMessage}${keyHint}`,
-      details: err?.response?.data || err?.message
-    });
-  }
-});
-
-app.get('/list-models', async (req, res) => {
-  try {
-    const output = {};
-
-    for (const version of GEMINI_API_VERSIONS) {
-      try {
-        const models = await listGenerateCapableModels(version);
-        output[version] = models;
-      } catch (err) {
-        output[version] = { error: err.message };
+    return {
+      status,
+      body: {
+        error: `${apiMessage}${keyHint}`,
+        details: err?.response?.data || err?.message
       }
-    }
-
-    res.json(output);
-  } catch (err) {
-    console.error('Error listing models:', err.message);
-    res.status(500).json({ error: err.message });
+    };
   }
-});
+}
 
-// Config endpoint for frontend to fetch API keys and settings
-app.get('/api/config', (req, res) => {
-  res.json({
-    imgbbApiKey: process.env.IMGBB_API_KEY || ''
-  });
-});
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`AI Itinerary API (Gemini) running on port ${PORT}`));
-
-console.log('If your frontend runs on port 5500 and backend on 3001, use http://localhost:3001/api/generate-itinerary for local testing.');
-console.log("When deployed on Vercel, set window.__API_BASE__ to your Vercel URL (e.g. 'https://your-project.vercel.app') so the frontend calls the deployed backend.");
+module.exports = {
+  buildLocalItinerary,
+  chatReplyFromBody,
+  generateItineraryFromBody,
+  generateWithFallbackModels,
+  getCandidateRoutes,
+  listGenerateCapableModels,
+  GEMINI_API_VERSIONS
+};
