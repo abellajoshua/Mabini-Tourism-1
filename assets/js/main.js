@@ -310,9 +310,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             const fb = getFirebaseInstance();
             if (!fb || !fb.firestore) return;
             const doc = await fb.firestore().collection('siteSettings').doc(heroSliderDocId).get();
-            if (doc.exists && doc.data() && Array.isArray(doc.data().images) && doc.data().images.length) {
-                applyHeroSliderImages(doc.data().images);
-                localStorage.setItem(heroSliderCacheKey, JSON.stringify(doc.data().images));
+            if (doc.exists) {
+                const data = doc.data() || {};
+                const images = Array.isArray(data.images) ? data.images : [];
+                if (images.length) {
+                    applyHeroSliderImages(images);
+                    localStorage.setItem(heroSliderCacheKey, JSON.stringify(images));
+                } else {
+                    localStorage.removeItem(heroSliderCacheKey);
+                    applyHeroSliderImages(defaultSliderImages);
+                }
             }
         } catch (error) {
             console.warn('Failed to load hero slider images.', error);

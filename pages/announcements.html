@@ -926,6 +926,12 @@
                 document.body.classList.add('has-bg-image');
             };
 
+            const clearBackgroundImage = () => {
+                document.documentElement.style.setProperty('--bg-image', 'none');
+                document.documentElement.classList.remove('has-bg-image');
+                document.body.classList.remove('has-bg-image');
+            };
+
             const compressImageToDataUrl = (file, maxDimension = 1920, maxBytes = 900 * 1024) => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -970,6 +976,9 @@
                     if (doc.exists && doc.data() && doc.data().imageData) {
                         applyBackgroundImage(doc.data().imageData);
                         localStorage.setItem(backgroundCacheKey, doc.data().imageData);
+                    } else if (doc.exists) {
+                        clearBackgroundImage();
+                        localStorage.removeItem(backgroundCacheKey);
                     }
                 } catch (err) {
                     console.error('Failed to load saved background', err);
@@ -1487,9 +1496,7 @@
                         }
                         return;
                     }
-                    document.documentElement.style.setProperty('--bg-image', 'none');
-                    document.documentElement.classList.remove('has-bg-image');
-                    document.body.classList.remove('has-bg-image');
+                    clearBackgroundImage();
                     localStorage.removeItem(backgroundCacheKey);
                     if (bgFileInput) {
                         bgFileInput.value = '';
